@@ -1,6 +1,7 @@
 import React from 'react';
-import { Clock, Droplets, Wind, Sparkles, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
+import { Clock, Droplets, Wind, Sparkles, CheckCircle2, AlertTriangle, XCircle, CalendarPlus } from 'lucide-react';
 import { WeatherIcon } from '../utils/weatherIcons';
+import AddToCalendarButton from './AddToCalendarButton';
 
 export default function DayCard({ day, tempUnit, onSelect, isSelected }) {
   const feelsHigh = tempUnit === 'C' ? day.feels_like_high_c : day.feels_like_high_f;
@@ -125,14 +126,34 @@ export default function DayCard({ day, tempUnit, onSelect, isSelected }) {
         )}
       </div>
 
-      {/* Footer / Drill Down prompt */}
-      <div className="mt-3 pt-2.5 border-t border-slate-800/70 flex items-center justify-between text-[11px] text-slate-400 group-hover:text-slate-300">
+      {/* Footer / Drill Down prompt & Calendar Add */}
+      <div className="mt-3 pt-2.5 border-t border-slate-800/70 flex items-center justify-between text-[11px] text-slate-400">
         <span className="flex items-center gap-1">
           <Wind className="w-3 h-3 text-slate-400" /> {Math.round(day.max_wind_mph)} mph
         </span>
-        <span className="font-semibold text-emerald-400 group-hover:underline">
-          View Hourly →
-        </span>
+
+        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          {day.peak_window && (
+            <AddToCalendarButton
+              size="small"
+              buttonLabel="Add"
+              event={{
+                title: `🌿 Lawn Mowing - ${day.day_of_week}`,
+                dateStr: day.date,
+                startTime: day.peak_window.start_time,
+                endTime: day.peak_window.end_time,
+                description: `YardWork Recommended Mowing Window:\n• Time: ${day.peak_window.start_time} - ${day.peak_window.end_time} (${day.peak_window.time_label})\n• Weather: ${day.dominant_weather_description}\n• Feels Like: ${Math.round(feelsHigh)}°${tempUnit}\n• Rain Chance: ${day.max_rain_prob}%\n\nOptimized by YardWork: https://mseezzy.github.io/yardwork/`,
+                location: "Home Lawn"
+              }}
+            />
+          )}
+          <span
+            onClick={() => onSelect(day)}
+            className="font-semibold text-emerald-400 hover:underline cursor-pointer ml-1"
+          >
+            Hourly →
+          </span>
+        </div>
       </div>
     </div>
   );

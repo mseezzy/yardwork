@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Clock, Droplets, Wind, Sun, AlertTriangle, CheckCircle2, XCircle, Sparkles, ShieldAlert } from 'lucide-react';
+import { X, Clock, Droplets, Wind, Sun, AlertTriangle, CheckCircle2, XCircle, Sparkles, ShieldAlert, CalendarPlus } from 'lucide-react';
 import { WeatherIcon } from '../utils/weatherIcons';
+import AddToCalendarButton from './AddToCalendarButton';
 
 export default function DayDetailModal({ day, tempUnit, onClose }) {
   if (!day) return null;
@@ -106,7 +107,7 @@ export default function DayDetailModal({ day, tempUnit, onClose }) {
 
           {/* Prime Window Recommendation Spotlight Card */}
           {day.peak_window && (
-            <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border border-emerald-500/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+            <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border border-emerald-500/40 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-600/30 border border-emerald-500/50 flex items-center justify-center text-emerald-400 shrink-0">
                   <Clock className="w-5 h-5" />
@@ -124,11 +125,25 @@ export default function DayDetailModal({ day, tempUnit, onClose }) {
                 </div>
               </div>
 
-              <div className="text-right sm:border-l sm:border-slate-800 sm:pl-4">
-                <div className="text-xs text-slate-400">Comfort Score</div>
-                <div className="text-xl font-black text-emerald-400">
-                  {day.peak_window.avg_score}<span className="text-xs text-slate-400 font-normal">/100</span>
+              <div className="flex items-center gap-3 self-end sm:self-center sm:border-l sm:border-slate-800 sm:pl-4">
+                <div className="text-right">
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider">Score</div>
+                  <div className="text-xl font-black text-emerald-400 leading-none">
+                    {day.peak_window.avg_score}<span className="text-xs text-slate-400 font-normal">/100</span>
+                  </div>
                 </div>
+
+                <AddToCalendarButton
+                  buttonLabel="Add to Calendar"
+                  event={{
+                    title: `🌿 Lawn Mowing - ${day.day_of_week}`,
+                    dateStr: day.date,
+                    startTime: day.peak_window.start_time,
+                    endTime: day.peak_window.end_time,
+                    description: `YardWork Recommended Mowing Window:\n• Time: ${day.peak_window.start_time} - ${day.peak_window.end_time} (${day.peak_window.time_label})\n• Weather: ${day.dominant_weather_description}\n• Feels Like: ${Math.round(feelsHigh)}°${tempUnit}\n• Rain Chance: ${day.max_rain_prob}%\n• Wind: ${Math.round(day.max_wind_mph)} mph\n• Suitability Score: ${day.peak_window.avg_score}/100\n\nOptimized by YardWork: https://mseezzy.github.io/yardwork/`,
+                    location: "Home Lawn"
+                  }}
+                />
               </div>
             </div>
           )}

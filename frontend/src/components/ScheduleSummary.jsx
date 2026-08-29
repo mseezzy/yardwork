@@ -1,6 +1,7 @@
 import React from 'react';
-import { CalendarCheck, Clock, Sun, CheckCircle2, AlertTriangle, XCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { CalendarCheck, Clock, Sun, CheckCircle2, AlertTriangle, XCircle, Sparkles, ArrowRight, CalendarPlus } from 'lucide-react';
 import { WeatherIcon } from '../utils/weatherIcons';
+import AddToCalendarButton from './AddToCalendarButton';
 
 export default function ScheduleSummary({ plan, tempUnit, onSelectDay }) {
   if (!plan || !plan.summary) return null;
@@ -8,6 +9,19 @@ export default function ScheduleSummary({ plan, tempUnit, onSelectDay }) {
   const { summary, calendar } = plan;
   const scheduledDays = calendar.filter(d => d.is_scheduled_mow);
   const nextMowDay = scheduledDays[0];
+
+  // Prepare events for calendar export
+  const allEvents = scheduledDays.map((day, idx) => {
+    const feelsHigh = tempUnit === 'C' ? day.feels_like_high_c : day.feels_like_high_f;
+    return {
+      title: `🌿 Lawn Mowing #${day.schedule_order || idx + 1} - YardWork`,
+      dateStr: day.date,
+      startTime: day.peak_window?.start_time || "09:00",
+      endTime: day.peak_window?.end_time || "11:00",
+      description: `YardWork Scheduled Mowing #${day.schedule_order || idx + 1}:\n• Time: ${day.peak_window?.start_time || '09:00'} - ${day.peak_window?.end_time || '11:00'}\n• Weather: ${day.dominant_weather_description}\n• Feels Like: ${Math.round(feelsHigh)}°${tempUnit}\n• Rain Chance: ${day.max_rain_prob}%\n\nOptimized by YardWork: https://mseezzy.github.io/yardwork/`,
+      location: "Home Lawn"
+    };
+  });
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 border border-emerald-500/30 rounded-2xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
@@ -31,17 +45,25 @@ export default function ScheduleSummary({ plan, tempUnit, onSelectDay }) {
           </p>
         </div>
 
-        {/* Condition Counts Pill */}
+        {/* Action Controls & Condition Counts */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/60 shadow-sm">
+          {allEvents.length > 0 && (
+            <AddToCalendarButton
+              events={allEvents}
+              buttonLabel="Add All to Calendar"
+              size="normal"
+            />
+          )}
+
+          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/60 shadow-sm">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
             {summary.good_days_count} Good
           </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/60 shadow-sm">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/60 shadow-sm">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
             {summary.fair_days_count} Fair
           </span>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-950/90 text-rose-300 border border-rose-700/60 shadow-sm">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-rose-950/90 text-rose-300 border border-rose-700/60 shadow-sm">
             <XCircle className="w-3.5 h-3.5 text-rose-400" />
             {summary.bad_days_count} Bad
           </span>
@@ -87,11 +109,26 @@ export default function ScheduleSummary({ plan, tempUnit, onSelectDay }) {
                 )}
               </div>
 
-              <div className="mt-3 pt-2.5 border-t border-slate-800/70 flex items-center justify-between text-xs text-slate-400 group-hover:text-slate-200">
-                <span>Rain chance: <strong className="text-slate-200">{day.max_rain_prob}%</strong></span>
-                <span className="text-emerald-400 flex items-center gap-1 font-semibold text-[11px]">
-                  Drill Down <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
-                </span>
+              <div className="mt-3 pt-2.5 border-t border-slate-800/70 flex items-center justify-between text-xs text-slate-400">
+                <span className="text-[11px]">Rain: <strong className="text-slate-200">{day.max_rain_prob}%</strong></span>
+                
+                <div className="flex items-center gap-2">
+                  <AddToCalendarButton
+                    size="small"
+                    buttonLabel="Cal"
+                    event={{
+                      title: `🌿 Lawn Mowing #${day.schedule_order || idx + 1} - YardWork`,
+                      dateStr: day.date,
+                      startTime: day.peak_window?.start_time || "09:00",
+                      endTime: day.peak_window?.end_time || "11:00",
+                      description: `YardWork Scheduled Mowing #${day.schedule_order || idx + 1}:\n• Time: ${day.peak_window?.start_time || '09:00'} - ${day.peak_window?.end_time || '11:00'}\n• Weather: ${day.dominant_weather_description}\n• Feels Like: ${Math.round(feelsHigh)}°${tempUnit}\n• Rain Chance: ${day.max_rain_prob}%\n\nOptimized by YardWork: https://mseezzy.github.io/yardwork/`,
+                      location: "Home Lawn"
+                    }}
+                  />
+                  <span className="text-emerald-400 flex items-center gap-0.5 font-semibold text-[11px] hover:underline">
+                    Drill Down <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
+                  </span>
+                </div>
               </div>
             </div>
           );
